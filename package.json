@@ -1,0 +1,17 @@
+{
+  "name": "podtube",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "peter@peterkroener.de",
+  "license": "ISC",
+  "dependencies": {
+    "canvas": "^2.6.1",
+    "node-fetch": "^2.6.1",
+    "rimraf": "^3.0.2",
+    "rss-parser": "^3.11.0"
+  }
+}
