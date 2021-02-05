@@ -62,6 +62,7 @@ function encode(title, audioFile, thumbnailFile) {
   const videoFile = `out/${title}.mp4`;
   console.log(`Encoding "${videoFile}". This will take some time...`);
   execSync(`ffmpeg -loop 1 -i "${thumbnailFile}" -i "${audioFile}" -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p -shortest "${videoFile}" > log.txt`);
+  return videoFile;
 }
 
 (async function() {
