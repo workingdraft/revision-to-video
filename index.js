@@ -43,16 +43,16 @@ async function generateThumbnail(title) {
   const ctx = canvas.getContext("2d");
   ctx.drawImage(image, 0, 0);
   ctx.font = "bold 400px Source Sans Pro"
-  ctx.textAlign = "right";
+  ctx.textAlign = "left";
   ctx.fillStyle = "#910c69";
   ctx.strokeStyle = "#FFF";
   ctx.lineWidth = 80;
-  ctx.strokeText(tagText, canvas.width - 250, canvas.height - 300);
-  ctx.fillText(tagText, canvas.width - 250, canvas.height - 300);
+  ctx.strokeText(tagText, 250, canvas.height - 400);
+  ctx.fillText(tagText, 250, canvas.height - 400);
   ctx.font = "bold 200px Source Sans Pro";
   ctx.lineWidth = 40;
-  ctx.strokeText(subText, canvas.width - 250, canvas.height - 100, maxTextWidth);
-  ctx.fillText(subText, canvas.width - 250, canvas.height - 100, maxTextWidth);
+  ctx.strokeText(subText, 250, canvas.height - 150, maxTextWidth);
+  ctx.fillText(subText, 250, canvas.height - 150, maxTextWidth);
   const thumbnailFile = `tmp/${title}.png`;
   await fs.writeFile(thumbnailFile, canvas.toBuffer("image/png"));
   return thumbnailFile;
