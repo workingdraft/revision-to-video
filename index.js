@@ -26,7 +26,9 @@ async function downloadAudio({ title, url }) {
 function parseTitle(title) {
   const match = /^Revision ([0-9]+)(?::(.+))?/.exec(title);
   if (!match) {
-    console.warn(`WARNING: Unable to parse title "${title}", check if generated thumbnail is ok`);
+    console.warn(
+      `WARNING: Unable to parse title "${title}", check if generated thumbnail is ok`
+    );
     return { nr: -1, text: null };
   }
   return { nr: match[1], text: match[2] };
@@ -35,14 +37,14 @@ function parseTitle(title) {
 async function generateThumbnail(title) {
   console.log(`Rendering thumbnail...`);
   const { nr, text } = parseTitle(title);
-  const tagText = (nr > -1) ? `#${nr}` : `#spezial`;
-  const subText = (nr === -1 || !text) ? title : text;
+  const tagText = nr > -1 ? `#${nr}` : `#spezial`;
+  const subText = nr === -1 || !text ? title : text;
   const image = await loadImage("img/video.png");
   const maxTextWidth = image.width - 2 * 250;
   const canvas = createCanvas(image.width, image.height);
   const ctx = canvas.getContext("2d");
   ctx.drawImage(image, 0, 0);
-  ctx.font = "bold 400px Source Sans Pro"
+  ctx.font = "bold 400px Source Sans Pro";
   ctx.textAlign = "left";
   ctx.fillStyle = "#910c69";
   ctx.strokeStyle = "#FFF";
@@ -59,20 +61,24 @@ async function generateThumbnail(title) {
 }
 
 function encode(title, audioFile, thumbnailFile) {
-  const videoFile = `out/${title}.mp4`;
+  const videoFile = `out/${title}.mov`;
   console.log(`Encoding "${videoFile}". This will take some time...`);
-  execSync(`ffmpeg -loop 1 -i "${thumbnailFile}" -i "${audioFile}" -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p -shortest "${videoFile}" > log.txt`);
+  execSync(
+    `ffmpeg -loop 1 -i "${thumbnailFile}" -i "${audioFile}" -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p -shortest -preset ultrafast "${videoFile}" > log.txt`
+  );
   return videoFile;
 }
 
-(async function() {
-  rimraf.sync("out/*")
-  rimraf.sync("tmp/*")
+(async function () {
+  rimraf.sync("out/*");
+  rimraf.sync("tmp/*");
   const { url, title } = await getLatestFeedItem();
-  const [ audioFile, thumbnailFile ] = await Promise.all([
+  const [audioFile, thumbnailFile] = await Promise.all([
     downloadAudio({ url, title }),
     generateThumbnail(title),
   ]);
   const videoFile = encode(title, audioFile, thumbnailFile);
-  console.log(`Done! Now upload "${videoFile}" to https://studio.youtube.com/channel/UCTJTfsq21-sC6maSTzifiPQ/videos/upload?d=ud`);
+  console.log(
+    `Done! Now upload "${videoFile}" to https://studio.youtube.com/channel/UCTJTfsq21-sC6maSTzifiPQ/videos/upload?d=ud`
+  );
 })();
