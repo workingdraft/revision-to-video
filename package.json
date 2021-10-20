@@ -9,7 +9,8 @@
   "author": "peter@peterkroener.de",
   "license": "ISC",
   "dependencies": {
-    "canvas": "^2.6.1",
+    "canvas": "^2.8.0",
+    "commander": "^8.2.0",
     "node-fetch": "^2.6.1",
     "rimraf": "^3.0.2",
     "rss-parser": "^3.11.0"

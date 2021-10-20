@@ -4,12 +4,17 @@ const { execSync } = require("child_process");
 const fetch = require("node-fetch");
 const parser = new (require("rss-parser"))();
 const { createCanvas, loadImage } = require("canvas");
+const { Command } = require("commander");
 
-async function getLatestFeedItem() {
+async function getFeedItem(i) {
   console.log("Reading feed...");
   const feed = await parser.parseURL("https://workingdraft.de/feed/");
-  console.log(`Proceeding with feed item "${feed.items[0].title}"...`);
-  return { title: feed.items[0].title, url: feed.items[0].enclosure.url };
+  console.log(`Proceeding with feed item "${feed.items[i].title}"...`);
+  return { title: feed.items[i].title, url: feed.items[i].enclosure.url };
+}
+
+async function getLatestFeedItem() {
+  return getFeedItem(0);
 }
 
 async function downloadAudio({ title, url }) {
@@ -69,16 +74,59 @@ function encode(title, audioFile, thumbnailFile) {
   return videoFile;
 }
 
-(async function () {
-  rimraf.sync("out/*");
-  rimraf.sync("tmp/*");
-  const { url, title } = await getLatestFeedItem();
+function parseArguments() {
+  const program = new Command();
+
+  program.version("1.0.0");
+
+  program
+    .option("-r, --revision", "Revisions-Eintrag")
+    .option("-t, --thumbnail <title>", "Generate a thumbnail only")
+    .option(
+      "-e, --entry <entry>",
+      "Welchen Eintrag im RSS Feed (0 = Letzte)",
+      0
+    )
+    .option("-k, --keep", "Outputverzeichnisse löschen", false)
+    .option("-h, --help", "Hilfe!");
+
+  program.parse(process.argv);
+
+  if (program.opts().help) {
+    program.outputHelp();
+    process.exit(0);
+  }
+
+  return program.opts();
+}
+
+async function main() {
+  const options = parseArguments();
+  console.log(options);
+
+  if (options.thumbnail) {
+    await generateThumbnail(options.thumbnail);
+    console.log(`Thumbnail rendered at ./tmp/${options.thumbnail}.png`);
+    process.exit(0);
+  }
+
+  if (!options.keep) {
+    rimraf.sync("out/*");
+    rimraf.sync("tmp/*");
+  }
+
+  const { url, title } = await getFeedItem(parseInt(options.entry));
   const [audioFile, thumbnailFile] = await Promise.all([
     downloadAudio({ url, title }),
     generateThumbnail(title),
   ]);
+
   const videoFile = encode(title, audioFile, thumbnailFile);
+  return videoFile;
+}
+
+main().then((videoFile) => {
   console.log(
     `Done! Now upload "${videoFile}" to https://studio.youtube.com/channel/UCTJTfsq21-sC6maSTzifiPQ/videos/upload?d=ud`
   );
-})();
+});
