@@ -13,10 +13,6 @@ async function getFeedItem(i) {
   return { title: feed.items[i].title, url: feed.items[i].enclosure.url };
 }
 
-async function getLatestFeedItem() {
-  return getFeedItem(0);
-}
-
 async function downloadAudio({ title, url }) {
   console.log(`Downloading audio...`);
   const response = await fetch(url);
@@ -88,7 +84,11 @@ function parseArguments() {
       0
     )
     .option("-k, --keep", "Outputverzeichnisse löschen", false)
-    .option("-h, --help", "Hilfe!");
+    .option("-h, --help", "Hilfe!")
+    .option(
+      "-m, --manual <entry...>",
+      'Manual processing. Pass audio file and title, e.g -m test.mp3 "Last Episode"'
+    );
 
   program.parse(process.argv);
 
@@ -107,12 +107,23 @@ async function main() {
   if (options.thumbnail) {
     await generateThumbnail(options.thumbnail);
     console.log(`Thumbnail rendered at ./tmp/${options.thumbnail}.png`);
-    process.exit(0);
   }
 
   if (!options.keep) {
     rimraf.sync("out/*");
     rimraf.sync("tmp/*");
+  }
+
+  if (options.manual) {
+    if (options.manual.length == 2) {
+      const [audioFile, title] = options.manual;
+      const thumbnailFile = await generateThumbnail(title);
+      const videoFile = encode(title, audioFile, thumbnailFile);
+      return videoFile;
+    } else {
+      console.log("Insufficient number of arguments");
+      process.exit(1);
+    }
   }
 
   const { url, title } = await getFeedItem(parseInt(options.entry));
