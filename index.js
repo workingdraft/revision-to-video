@@ -100,6 +100,27 @@ function parseArguments() {
   return program.opts();
 }
 
+async function manual(options) {
+  if (options.manual.length !== 2) {
+    console.log("Insufficient number of arguments");
+    process.exit(1);
+  }
+  const [audioFile, title] = options.manual;
+  const thumbnailFile = await generateThumbnail(title);
+
+  return [audioFile, thumbnailFile, title];
+}
+
+async function feed(options) {
+  const { url, title } = await getFeedItem(parseInt(options.entry));
+  const [audioFile, thumbnailFile] = await Promise.all([
+    downloadAudio({ url, title }),
+    generateThumbnail(title),
+  ]);
+
+  return [audioFile, thumbnailFile, title];
+}
+
 async function main() {
   const options = parseArguments();
   console.log(options);
@@ -114,23 +135,10 @@ async function main() {
     rimraf.sync("tmp/*");
   }
 
-  if (options.manual) {
-    if (options.manual.length == 2) {
-      const [audioFile, title] = options.manual;
-      const thumbnailFile = await generateThumbnail(title);
-      const videoFile = encode(title, audioFile, thumbnailFile);
-      return videoFile;
-    } else {
-      console.log("Insufficient number of arguments");
-      process.exit(1);
-    }
-  }
+  // create something from disk (manual) or from the feed
+  let fn = options.manual ? manual : feed;
 
-  const { url, title } = await getFeedItem(parseInt(options.entry));
-  const [audioFile, thumbnailFile] = await Promise.all([
-    downloadAudio({ url, title }),
-    generateThumbnail(title),
-  ]);
+  const [audioFile, thumbnailFile, title] = await fn(options);
 
   const videoFile = encode(title, audioFile, thumbnailFile);
   return videoFile;
