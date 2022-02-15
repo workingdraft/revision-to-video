@@ -122,6 +122,7 @@ async function feed(options) {
 }
 
 async function main() {
+  const start = Date.now();
   const options = parseArguments();
   console.log(options);
 
@@ -141,6 +142,10 @@ async function main() {
   const [audioFile, thumbnailFile, title] = await fn(options);
 
   const videoFile = encode(title, audioFile, thumbnailFile);
+  const end = Date.now();
+
+  console.log(`Took ${end - start}ms`);
+
   return videoFile;
 }
 
