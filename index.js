@@ -100,6 +100,30 @@ function parseArguments() {
   return program.opts();
 }
 
+function formatDate(ms) {
+  let s = parseInt(ms / 1000);
+  let min = parseInt(s / 60);
+  let hr = parseInt(min / 60);
+
+  s = s - min * 60;
+  min = min - hr * 60;
+
+  let str = "";
+
+  if(hr > 0) {
+    str += `${hr} hours `;
+  }
+
+  if(min > 0 || hr > 0) {
+    str += `${min} minutes `;
+  }
+
+  str += `${s} seconds`;
+
+  return str;
+}
+
+
 async function manual(options) {
   if (options.manual.length !== 2) {
     console.log("Insufficient number of arguments");
@@ -144,7 +168,7 @@ async function main() {
   const videoFile = encode(title, audioFile, thumbnailFile);
   const end = Date.now();
 
-  console.log(`Took ${end - start}ms`);
+  console.log(`Took ${formatDate(end - start)}`);
 
   return videoFile;
 }
